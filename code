@@ -1,0 +1,503 @@
+module fp(
+	output [7:0] DATA_R, DATA_G, DATA_B, 
+	output reg [3:0] COMM,
+	output reg [15:0] seconed,
+	output reg beep,
+	input CLK,
+	input cin,crr,
+	output reg [0:7] SevenSeg);
+
+	
+   parameter logic [7:0] Drop1 [7:0] = '{8'b11111111,
+														8'b11111110,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111110,
+														8'b11111110,
+														8'b11111111};
+	parameter logic [7:0] Drop2 [7:0] = '{8'b11111111,
+														8'b11111101,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111101,
+														8'b11111101,
+														8'b11111111};
+	parameter logic [7:0] Drop3 [7:0] = '{8'b11111111,
+														8'b11111011,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111011,
+														8'b11111011,
+														8'b11111111};
+	parameter logic [7:0] Drop4 [7:0] = '{8'b11111111,
+														8'b11110111,
+														8'b11111111,
+														8'b11111110,
+														8'b11111111,
+														8'b11110110,
+														8'b11110111,
+														8'b11111110};								
+	parameter logic [7:0] Drop5 [7:0] =  '{8'b11111111,
+														8'b11101111,
+														8'b11111111,
+														8'b11111101,
+														8'b11111111,
+														8'b11101101,
+														8'b11101111,
+														8'b11111101};
+	parameter logic [7:0] Drop6 [7:0] = '{8'b11111111,
+														8'b11011111,
+														8'b11111111,
+														8'b11111011,
+														8'b11111111,
+														8'b11011011,
+														8'b11011111,
+														8'b11111011};
+	parameter logic [7:0] Drop7 [7:0] = '{8'b11111111,
+														8'b10111111,
+														8'b11111110,
+														8'b11110111,
+														8'b11111110,
+														8'b10110111,
+														8'b10111110,
+														8'b11110111};
+	parameter logic [7:0] Drop8 [7:0] = '{8'b11111111,
+														8'b01111111,
+														8'b11111101,
+														8'b11101111,
+														8'b11111101,
+														8'b01101111,
+														8'b01111101,
+														8'b11101111};
+	parameter logic [7:0] Drop9 [7:0]=   '{8'b11111110,
+														8'b11111111,
+														8'b11111010,
+														8'b11011111,
+														8'b11111010,
+														8'b11011111,
+														8'b11111011,
+														8'b11011111};
+	parameter logic [7:0] Drop10 [7:0]=  '{8'b11111101,
+														8'b11111111,
+														8'b11110101,
+														8'b10111111,
+														8'b11110101,
+														8'b10111111,
+														8'b11110111,
+														8'b10111111};
+	parameter logic [7:0] Drop11 [7:0]=  '{8'b11111011,
+														8'b11111111,
+														8'b11101011,
+														8'b01111111,
+														8'b11101011,
+														8'b01111111,
+														8'b11101111,
+														8'b01111111};
+	parameter logic [7:0] Drop12 [7:0]=  '{8'b11110111,
+														8'b11111111,
+														8'b11010111,
+														8'b11111111,
+														8'b11010111,
+														8'b11111111,
+														8'b11011111,
+														8'b11111111};
+														
+	parameter logic [7:0] Drop13 [7:0]=  '{8'b11101111,
+														8'b11111111,
+														8'b10101111,
+														8'b11111111,
+														8'b10101111,
+														8'b11111111,
+														8'b10111111,
+														8'b11111111};
+	parameter logic [7:0] Drop14 [7:0] = '{8'b11011111,
+														8'b11111111,
+														8'b01011111,
+														8'b11111111,
+														8'b01011111,
+														8'b11111111,
+														8'b01111111,
+														8'b11111111};
+	parameter logic [7:0] Drop15 [7:0] = '{8'b10111111,
+														8'b11111111,
+														8'b10111111,
+														8'b11111111,
+														8'b10111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111};
+	parameter logic [7:0] Drop16 [7:0] = '{8'b01111111,
+														8'b11111111,
+														8'b01111111,
+														8'b11111111,
+														8'b01111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111};	
+	parameter logic [7:0] Drop17 [7:0] = '{8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111};															
+	 parameter logic [7:0] DropO [7:0] = '{8'b11100111,//7
+														8'b01111110,//3
+														8'b10111101,//5
+														8'b11011011,//1
+														8'b11011011,
+														8'b10111101,//2
+														8'b01111110,//4
+														8'b11100111};//0
+	
+	parameter logic [7:0] DropX [7:0] =  '{8'b01111110,//X
+														8'b11100111,
+														8'b11011011,
+														8'b10111101,
+														8'b10111101,
+														8'b11011011,
+														8'b11100111,
+														8'b01111110};
+																															
+//以下為角色移動矩陣
+	
+	parameter logic [7:0] D_Char [7:0] = '{8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b01111111};
+	parameter logic [7:0] D1_Char [7:0] = '{8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b01111111,
+														8'b11111111};														
+	parameter logic [7:0] D2_Char [7:0] = '{8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b01111111,
+														8'b11111111,
+														8'b11111111};	
+	parameter logic [7:0] D3_Char [7:0] = '{8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b01111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111};
+   parameter logic [7:0] D4_Char [7:0] = '{8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b01111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111};
+   parameter logic [7:0] D5_Char [7:0] = '{8'b11111111,
+														8'b11111111,
+														8'b01111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111};	
+	parameter logic [7:0] D6_Char [7:0] = '{8'b11111111,
+														8'b01111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111};	
+	parameter logic [7:0] D7_Char [7:0] = '{8'b01111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111};
+	parameter logic [7:0] D8_Char [7:0] = '{8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111,
+														8'b11111111};		
+
+	divfreq F0(CLK, CLK_div); 
+	CLK_one F1(CLK, CLK_1); 
+	CLK_two F2(CLK, CLK_2);
+	byte cnt;
+	int x;
+	int cnt_n;
+	int change;
+	int step_count;
+	initial
+		begin
+			beep = 0;
+		   x=3;
+			cnt = 0;
+			cnt_n=0;
+			change=0;
+			step_count = 0;
+			DATA_G = 8'b11111111;
+			DATA_B = 8'b11111111;
+			DATA_R = 8'b11111111;
+			seconed = 16'b1111111111111111;
+			SevenSeg = 8'b00000010;
+		end
+	
+	
+	
+	always @(posedge CLK_div)
+		  begin
+			if(cnt >=7)
+				cnt <= 0;
+			else 
+			   cnt <= cnt + 1;
+			COMM <= {cnt, 1'b1}; 			
+			if(x==7) DATA_R <= D_Char[cnt]; //移動(隨x的增加或減少show出不同的位置)
+			else if(x==3) 
+			   DATA_R <= D1_Char[cnt];
+			else if(x==5) 
+			   DATA_R <= D2_Char[cnt];
+			else if(x==1) 
+			   DATA_R <= D3_Char[cnt];
+			else if(x==6) 
+			   DATA_R <= D4_Char[cnt];
+			else if(x==2) 
+			   DATA_R <= D5_Char[cnt];
+			else if(x==4) 
+			   DATA_R <= D6_Char[cnt];
+			else if(x==0) 
+			   DATA_R <= D7_Char[cnt];
+			else if(x==8)
+				begin
+					DATA_R <= D8_Char[cnt];
+				end
+					
+			if(cnt_n==0) 
+			   DATA_G <= Drop1[cnt];
+			else if(cnt_n==1) 
+				begin
+					DATA_G <= Drop2[cnt];
+				end
+			else if(cnt_n==2) 
+			   begin
+					DATA_G <= Drop3[cnt];
+				end
+			else if(cnt_n==3) 
+			   begin
+					DATA_G <= Drop4[cnt];
+				end
+			else if(cnt_n==4) 
+			   begin
+					DATA_G <= Drop5[cnt];
+				end
+			else if(cnt_n==5) 
+			   begin
+					DATA_G <= Drop6[cnt];
+				end
+			else if(cnt_n==6) 
+			   begin
+					DATA_G <= Drop7[cnt];
+				end
+			else if(cnt_n==7) 
+			  begin
+			  	DATA_G <= Drop8[cnt];
+				if(x==5 || x==3 || x==4)  
+					begin 
+						change <=1 ;
+					end
+			  end
+			else if(cnt_n==8) 
+			   begin
+					DATA_G <= Drop9[cnt];
+				end
+			else if(cnt_n==9) 
+			   begin
+					DATA_G <= Drop10[cnt];
+				end
+			else if(cnt_n==10)
+				begin
+					DATA_G <= Drop11[cnt];
+	
+					if(x==5 || x==6 || x==7) 
+					begin 
+						change <= 1;
+					end
+				end
+			else if(cnt_n==11)
+				begin
+					DATA_G <= Drop12[cnt];
+				end
+			else if(cnt_n==12) 
+				begin
+					DATA_G <= Drop13[cnt];
+				end
+			else if(cnt_n==13) 
+				begin
+					DATA_G <= Drop14[cnt];
+				end
+			else if(cnt_n==14) 
+				begin
+					DATA_G <= Drop15[cnt];
+					if(x==3 || x==2 || x==1)
+						begin
+							change <= 1;
+						end
+				end
+			else if(cnt_n==15) 
+			   begin
+					DATA_G <= Drop16[cnt];	
+					if(x==0 || x==2 || x==1)  
+					begin 
+						change <= 1;
+					end
+				end
+			else if(cnt_n==16) 
+				DATA_G <= Drop17[cnt];
+			else if(cnt_n==17)         //成功
+					DATA_G <= DropO[cnt];
+					//if(step_count > 5 && step_count < 10)
+					//	SevenSeg = 8'b10011110; //1
+					//else if(step_count > 10 && step_count < 15)
+					//	SevenSeg = 8'b00100100; //2
+					//else if(step_count > 15 && step_count < 20)
+					//	SevenSeg = 8'b00001100; //3
+					//else if(step_count > 20 && step_count < 25)
+					//	SevenSeg = 8'b10011000; //4
+					//else if(step_count > 25 && step_count < 30)
+					//	SevenSeg = 8'b01001000; //5
+					//else if(step_count > 30 && step_count < 35)
+					//	SevenSeg = 8'b01000000; //6
+					//else if(step_count > 35 && step_count < 40)
+					//	SevenSeg = 8'b00011110; //7
+					//else if(step_count > 40 && step_count < 45)
+					//	SevenSeg = 8'b00000000; //8
+					//else if(step_count > 45)
+						//SevenSeg = 8'b00001000; //9
+			else if(cnt_n==18)         //失敗
+			   begin
+					DATA_G <= DropX[cnt];
+					beep <= 1;
+				end
+				if(step_count > 5 && step_count < 10)
+						SevenSeg = 8'b10011110; //1
+					else if(step_count > 10 && step_count < 15)
+						SevenSeg = 8'b00100100; //2
+					else if(step_count > 15 && step_count < 20)
+						SevenSeg = 8'b00001100; //3
+					else if(step_count > 20 && step_count < 25)
+						SevenSeg = 8'b10011000; //4
+					else if(step_count > 25 && step_count < 30)
+						SevenSeg = 8'b01001000; //5
+					else if(step_count > 30 && step_count < 35)
+						SevenSeg = 8'b01000000; //6
+					else if(step_count > 35 && step_count < 40)
+						SevenSeg = 8'b00011110; //7
+					else if(step_count > 40 && step_count < 45)
+						SevenSeg = 8'b00000000; //8
+					else if(step_count > 45)
+						SevenSeg = 8'b00001000; //9
+		  end
+	    
+always @(posedge CLK_1)//檢測角色按鈕事件
+		   begin
+				if(change == 1 || cnt_n == 17)
+					x <= 8;
+				else if(cin)			   
+					begin
+						if(x == 7)
+							begin
+								x <= x;
+							end
+						else
+							begin
+								x <= x+1;
+								step_count <= step_count + 1;
+							end
+					end
+			  else if(crr)
+			    begin
+			      if(x == 0)
+						begin
+							x <= x;
+						end
+				   else
+						begin
+							x <= x-1;
+							step_count <= step_count + 1;
+						end
+				 end
+			  else
+			    x <= x;
+		  end
+				
+always @(posedge CLK_2)//控制物件下落事件
+				  if(change == 1)
+							cnt_n<=18;
+					else if(cnt_n < 17) 
+						cnt_n <= cnt_n+1;
+	       
+	always @(posedge CLK_2)
+		begin
+		if(change == 1) seconed <= 16'b0000000000000000;
+		else seconed <= {1'b0,seconed[15:1]};
+			
+		end
+endmodule
+
+module divfreq(input CLK, output reg CLK_div); 
+	reg [24:0] Count; 
+	always @(posedge CLK) 
+		begin 
+			if(Count > 10000) 
+				begin 
+					Count <= 25'b0; 
+					CLK_div <= ~CLK_div; 
+				end 
+			else Count <= Count + 1'b1; 
+		end 
+endmodule
+
+module CLK_one(input CLK, output reg CLK_1); 
+	reg [24:0] Count; 
+	always @(posedge CLK) 
+		begin 
+			if(Count > 3000000) 
+				begin 
+					Count <= 25'b0; 
+					CLK_1 <= ~CLK_1; 
+				end 
+			else Count <= Count + 1'b1; 
+		end 
+endmodule
+
+
+module CLK_two(input CLK, output reg CLK_2); 
+	reg [24:0] Count; 
+	always @(posedge CLK) 
+		begin 
+			if(Count >= 25000000) 
+				begin 
+					Count <= 25'b0; 
+					CLK_2<= ~CLK_2; 
+				end 
+			else Count <= Count + 1'b1; 
+		end 
+endmodule
